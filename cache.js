@@ -9,10 +9,12 @@ class Cache {
     get(key, storeFunction) {
         const value = this.cache.get(key);
         if (value) {
+            console.log(`Cache: fetch data with key ${key}`);
             return Promise.resolve(value);
         }
 
         return storeFunction().then((result) => {
+            console.log(`Cache: storing data with key ${key}`);
             this.cache.set(key, result);
             return result;
         });

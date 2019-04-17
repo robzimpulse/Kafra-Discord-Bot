@@ -14,12 +14,12 @@ module.exports = {
     listen: (message, bot) => {
         let command = message.content.substr(`<@${bot.user.id}>`.length).trim();
         module.exports.getTrendingList(command, message, bot);
-        module.exports.getItemList(command, message, bot);
-
+        module.exports.getItemDetail(command, message, bot);
     },
 
-    getItemList: (command, message, bot) => {
+    getItemDetail: (command, message, bot) => {
         if(!command.toLowerCase().startsWith('item')) { return }
+        console.log(`Command: Executing Command ${message.content} from ${message.author.username}`);
         let itemName = command.substr('item'.length).trim();
         let options = {
             shouldSort: true,
@@ -40,6 +40,7 @@ module.exports = {
         PoporingAPI
             .getItemList()
             .then(data => {
+                console.log(`Command: Finish Fetching Item List!`);
                 let items = data.item_list.sort((a,b) => {
                     return a.display_name.length - b.display_name.length
                 });
@@ -51,6 +52,7 @@ module.exports = {
                 return PoporingAPI
                     .getLatestPrice(item.name)
                     .then(data => {
+                        console.log(`Command: Finish Fetching Item Detail!`);
                         var last_price_known_timestamp = '';
                         var last_price_known = 'Unknown';
                         if (data.data.last_known_timestamp > 0) {
@@ -77,7 +79,7 @@ module.exports = {
                                 )
                                 .setColor('AQUA')
                         );
-
+                        console.log(`Command: Finish Sending Message Item Detail!`);
                     })
             })
             .catch(error => {
@@ -88,10 +90,11 @@ module.exports = {
 
     getTrendingList: (command, message, bot) => {
         if(!command.toLowerCase().startsWith('trending')) { return }
+        console.log(`Command: Executing Command ${message.content} from ${message.author.username}`);
         PoporingAPI
             .getTrendingList()
             .then(data => {
-
+                console.log(`Command: Finish Fetching Trending List!`);
                 let items = data.item_list
                     .concat(data.item_list_full_1day)
                     .concat(data.item_list_full_3day)
@@ -99,7 +102,7 @@ module.exports = {
                     .map(item => PoporingAPI.getLatestPrice(item.name));
 
                 Promise.all(items).then(results => {
-
+                    console.log(`Command: Finish Fetching Each Item Detail!`);
                     let prc = (item) => currency(results.find(result => result.item_name === item.name).data.price);
                     let vol = (item) => qty(results.find(result => result.item_name === item.name).data.volume);
 
@@ -133,8 +136,8 @@ module.exports = {
                             .setTitle('Highest Change for the last 7 days')
                             .setColor('BLUE')
                             .setDescription(formatter(data.item_list_full_7day))
-                    )
-
+                    );
+                    console.log(`Command: Finish Sending Message Trending Items!`);
                 })
             })
             .catch(error => {

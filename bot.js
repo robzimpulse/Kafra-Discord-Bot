@@ -1,5 +1,4 @@
 const express = require('express');
-
 const Discord = require('discord.js');
 const logger = require('winston');
 const command = require('./command');
@@ -10,22 +9,20 @@ logger.remove(logger.transports.Console);
 logger.add(new logger.transports.Console, { colorize: true });
 
 bot.on('ready', () => {
-    // logger.info('Connected!');
-    // logger.info(`Logged in as ${bot.user.tag}!`);
     console.log(`Logged in as ${bot.user.tag}!`)
 });
 
 bot.on('disconnect', (message, code) => {
     console.log(`Disconnected ${message}, ${code}`);
-    // logger.info('Disconnected', message, code);
 });
 
 bot.on('message', message => {
     if (message.author.id === bot.user.id) { return }
     if (!message.content.startsWith(bot.user)) { return }
+    console.log(`Received Message: ${message.content} | ${message.author.username}`);
     command.listen(message, bot);
 });
 
 bot.login(process.env.DISCORD_TOKEN);
 
-express().listen(PORT, () => console.log(`Listening on ${ PORT }`))
+express().listen(PORT, () => console.log(`Listening on ${ PORT }`));
