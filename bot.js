@@ -1,5 +1,4 @@
 const Discord = require('discord.js');
-const auth = require('./auth.json');
 const logger = require('winston');
 const command = require('./command');
 const bot = new Discord.Client();
@@ -24,4 +23,4 @@ bot.on('message', message => {
     command.listen(message, bot);
 });
 
-bot.login(auth.token);
+bot.login(process.env.DISCORD_TOKEN);
