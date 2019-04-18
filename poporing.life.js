@@ -1,7 +1,6 @@
 const rp = require('request-promise');
-const CacheService = require('./cache');
-
-const cache = new CacheService(60 * 30);
+const CacheFirebase = require('./firebase');
+const cache = new CacheFirebase(60 * 30);
 const headers = {
     'Origin': 'https://poporing.life',
     'User-Agent': 'PoporingBot-01282019'
