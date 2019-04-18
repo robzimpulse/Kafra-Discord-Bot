@@ -40,7 +40,7 @@ module.exports = {
                         .setColor('AQUA');
 
                     let formatList = (object) => Object.keys(object)
-                        .map((key, value) => `${key.toUpperCase()} : **${value}**`)
+                        .map((key) => `${key.toUpperCase()} : **${object[key]}**`)
                         .filter(line => line.length > 0)
                         .join('\n');
 
