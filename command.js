@@ -55,7 +55,7 @@ module.exports = {
                         console.log(`Command: Finish Fetching Item Detail!`);
                         var last_price_known_timestamp = '';
                         var last_price_known = 'Unknown';
-                        if (data.data.last_known_timestamp > 0) {
+                        if (data.data.last_known_timestamp && data.data.last_known_timestamp > 0) {
                             last_price_known_timestamp = `Last Price from: ${Moment.unix(data.data.last_known_timestamp).fromNow()}`;
                             last_price_known = currency(data.data.last_known_price)
                         }
