@@ -1,4 +1,5 @@
 const PoporingAPI = require('./poporing.life');
+const RomwikiAPI = require('./romwiki.net');
 const { Client, RichEmbed } = require('discord.js');
 const Fuse = require('fuse.js');
 const Moment = require('moment');
@@ -15,6 +16,57 @@ module.exports = {
         let command = message.content.substr(`<@${bot.user.id}>`.length).trim();
         module.exports.getTrendingList(command, message, bot);
         module.exports.getItemDetail(command, message, bot);
+        module.exports.getMonsterDetail(command, message, bot);
+    },
+
+    getMonsterDetail: (command, message, bot) => {
+        if(!command.toLowerCase().startsWith('monster')) { return }
+        console.log(`Command: Executing Command ${message.content} from ${message.author.username}`);
+        let monsterName = command.substr('monster'.length).trim();
+        RomwikiAPI
+            .searchMonsterDetail(monsterName)
+            .then(results => {
+                results.forEach(result => {
+
+                    console.log(result);
+
+                    let embbed = new RichEmbed().setAuthor(
+                            `[Unknown] ${result.name}`,
+                            undefined,
+                            result.link
+                        )
+                        .setThumbnail(result.image)
+                        .setDescription(result.description)
+                        .setColor('AQUA');
+
+                    let formatList = (object) => Object.keys(object)
+                        .map((key, value) => `${key.toUpperCase()} : **${value}**`)
+                        .filter(line => line.length > 0)
+                        .join('\n');
+
+                    if (result.info) {
+                        embbed = embbed.addField('Info', formatList(result.info), true)
+                    }
+
+                    if (result.stats) {
+                        embbed = embbed.addField('Status', formatList(result.stats), true)
+                    }
+
+                    if (result.attrs) {
+                        embbed = embbed.addField('Attributes', formatList(result.attrs), true)
+                    }
+
+                    if (result.itemDrop) {
+                        let drops = result.itemDrop.map(item => `${item.name}: **${qty(item.qty)} (${item.chance})**`)
+                            .filter(line => line.length > 0)
+                            .join('\n');
+                        embbed = embbed.addField('Drop Items', drops, true)
+                    }
+
+                    message.channel.send(embbed);
+                });
+
+            });
     },
 
     getItemDetail: (command, message, bot) => {

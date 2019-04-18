@@ -2,6 +2,7 @@ const express = require('express');
 const Discord = require('discord.js');
 const logger = require('winston');
 const command = require('./command');
+const romwiki = require('./romwiki.net');
 const bot = new Discord.Client();
 const PORT = process.env.PORT || 5000;
 

@@ -17,7 +17,6 @@ module.exports = {
         return cache.get('price_'+name,() => {
             return rp(options).then(response => response.data)
         })
-
     },
 
     getTrendingList: () => {
