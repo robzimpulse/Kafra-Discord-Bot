@@ -59,35 +59,17 @@ module.exports = {
                     let vol = (item) => qty(results.find(result => result.item_name === item.name).data.volume);
 
                     let formatter = (array) => array
-                        .map((item, index) => `${index + 1}. ${item.display_name} ( ${prc(item)} z | ${vol(item)} pcs )`)
+                        .map((item, index) => `${index + 1}. ${item.display_name} ( ${prc(item)} z | ${vol(item)} pcs)`)
                         .join('\n');
 
                     message.channel.send(
                         new RichEmbed()
-                            .setTitle('Top Trending')
-                            .setColor('GOLD')
-                            .setDescription(formatter(data.item_list))
-                    );
-
-                    message.channel.send(
-                        new RichEmbed()
-                            .setTitle('Highest difference during 24 hours')
+                            .setTitle('Trending Info Today')
                             .setColor('AQUA')
-                            .setDescription(formatter(data.item_list_full_1day))
-                    );
-
-                    message.channel.send(
-                        new RichEmbed()
-                            .setTitle('Highest 3 Days price difference')
-                            .setColor('GREEN')
-                            .setDescription(formatter(data.item_list_full_3day))
-                    );
-
-                    message.channel.send(
-                        new RichEmbed()
-                            .setTitle('Highest Change for the last 7 days')
-                            .setColor('BLUE')
-                            .setDescription(formatter(data.item_list_full_7day))
+                            .addField('Top Trending', formatter(data.item_list), true)
+                            .addField('Highest difference during 24 hours', formatter(data.item_list_full_1day), true)
+                            .addField('Highest 3 Days price difference', formatter(data.item_list_full_3day), true)
+                            .addField('Highest Change for the last 7 days', formatter(data.item_list_full_7day), true)
                     );
                     console.log(`Command: Finish Sending Message Trending Items!`);
                 })
