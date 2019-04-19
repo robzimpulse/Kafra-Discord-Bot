@@ -64,6 +64,37 @@ module.exports = {
             .setThumbnail(BASE_ITEM_IMAGE_URL + item.image_url)
             .setDescription(description)
             .setColor('AQUA')
+    },
+
+    itemTrendingToMessageBuilder: (data) => {
+        let prc = (item) => currency(data.items.find(result => result.item_name === item.name).data.price);
+        let vol = (item) => qty(data.items.find(result => result.item_name === item.name).data.volume);
+        let formatter = (array) => array
+            .map((item, index) => `${index + 1}. ${item.display_name} ( ${prc(item)} z | ${vol(item)} pcs)`)
+            .join('\n');
+        return new RichEmbed()
+            .setTitle('Trending Info Today')
+            .setColor('AQUA')
+            .addField(
+                'Top Trending',
+                formatter(data.data.item_list),
+                true
+            )
+            .addField(
+                'Highest difference during 24 hours',
+                formatter(data.data.item_list_full_1day),
+                true
+            )
+            .addField(
+                'Highest 3 Days price difference',
+                formatter(data.data.item_list_full_3day),
+                true
+            )
+            .addField(
+                'Highest Change for the last 7 days',
+                formatter(data.data.item_list_full_7day),
+                true
+            )
     }
 
 };
