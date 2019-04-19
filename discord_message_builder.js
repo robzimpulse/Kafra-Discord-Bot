@@ -8,19 +8,21 @@ const BASE_ITEM_IMAGE_URL = 'https://static.poporing.life/items/';
 const currency = (number) => Numeral(number).format('0,0');
 const qty = (number) => Numeral(number).format('0,0');
 
+let formatList = (object) => Object.keys(object)
+    .map((key) => `${key.toUpperCase()} : **${object[key]}**`)
+    .filter(line => line.length > 0)
+    .join('\n');
+
+let capitalized = (string) => string.charAt(0).toUpperCase() + string.slice(1);
+
 module.exports = {
 
     monsterDetailToMessageBuilder: (monster) => {
         let embed = new RichEmbed()
-            .setAuthor(`[Unknown] ${monster.name}`, undefined, monster.link)
+            .setAuthor(`${monster.name}`, undefined, monster.link)
             .setThumbnail(monster.image)
             .setDescription(monster.description)
-            .setColor('AQUA');
-
-        let formatList = (object) => Object.keys(object)
-            .map((key) => `${key.toUpperCase()} : **${object[key]}**`)
-            .filter(line => line.length > 0)
-            .join('\n');
+            .setColor('GREEN');
 
         if (monster.info) {
             embed = embed.addField('Info', formatList(monster.info), true)
@@ -43,7 +45,7 @@ module.exports = {
         return embed
     },
 
-    itemDetailToMessageBuilder: (item) => {
+    exchangeDetailToMessageBuilder: (item) => {
         var last_price_known_timestamp = '';
         var last_price_known = 'Unknown';
         if (item.last_known_timestamp && item.last_known_timestamp > 0) {
@@ -74,7 +76,7 @@ module.exports = {
             .join('\n');
         return new RichEmbed()
             .setTitle('Trending Info Today')
-            .setColor('AQUA')
+            .setColor('BLUE')
             .addField(
                 'Top Trending',
                 formatter(data.data.item_list),
@@ -95,6 +97,21 @@ module.exports = {
                 formatter(data.data.item_list_full_7day),
                 true
             )
+    },
+
+    itemDetailToMessageBuilder: (item) => {
+        let embed = new RichEmbed()
+            .setAuthor(`[${capitalized(item.type)}] ${item.name}`, undefined, item.link)
+            .setColor('RED')
+            .setDescription(item.description)
+            .setThumbnail(item.image)
+            .addField('Item Info', formatList(item.item_info), true);
+
+        if (item.equipment_info) {
+            embed.addField('Equipment Info', formatList(item.equipment_info), true);
+        }
+
+        return embed
     }
 
 };
