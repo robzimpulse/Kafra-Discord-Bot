@@ -24,23 +24,26 @@ module.exports = {
                 .map(link => module.exports.getItemDetail(link))
             )
             .then(result => Promise.all(result))
-            .then(result => result
-                .map(item => module.exports.getEquipmentDetail(item))
-            )
-            .then(result => Promise.all(result))
-            .then(result => result
-                .map(item => module.exports.getCraftDetail(item))
-            )
-            .then(result => Promise.all(result))
     },
 
     getItemDetail: (link) => {
         return rp({uri: link, transform: transform}).then($ => {
-            let item_info = $('.item-details').find('.table').first()
+            let item_info = $("h3:contains('Item Info')")
+                .siblings('table').first()
                 .find('td').toArray().map(e => $(e).text())
                 .filter((e, i) => oddIndex(e, i))
                 .map(e => parseIntIfPossible(e));
-            return Object.assign({
+
+            let equipment_info = $("h3:contains('Equipment Info')")
+                .siblings('table').first()
+                .find('td').toArray().map(e => $(e).text())
+                .filter((e, i) => oddIndex(e, i))
+                .map(e => parseIntIfPossible(e));
+
+            let effects = $('.equip-effects').find('li').toArray()
+                .map(e => $(e).text());
+
+            let item = {
                 name: $('.item-name').text(),
                 image: $('.item-image').find('img').attr('src'),
                 link: link,
@@ -54,42 +57,20 @@ module.exports = {
                     tradeable: item_info[4],
                     storageable: item_info[5]
                 }
-            })
-        })
-    },
+            };
 
-    getEquipmentDetail: (item) => {
-        if (item.type !== 'equipment') { return Promise.resolve(item) }
-        return rp({uri: item.link, transform: transform}).then($ => {
-            let equipment_info = $('.item-details').find('.table').last()
-                .find('td').toArray().map(e => $(e).text())
-                .filter((e, i) => oddIndex(e, i));
+            console.log('test ' + link, equipment_info, effects);
 
-            let effects = $('.equip-effects').find('li').toArray()
-                .map(e => $(e).text());
-
-            return Object.assign(item, {
-                equipment_info: {
+            if (item.type.toLowerCase() === 'equipment') {
+                item.equipment_info = {
                     type: equipment_info[0],
                     job: equipment_info[1],
                     effect: effects.join(', ')
                 }
-            })
-        })
-    },
-
-    getCraftDetail: (item) => {
-        return rp({uri: item.link, transform: transform}).then($ => {
+            }
 
             let materials = $("h3:contains('Craft Info')")
                 .siblings('table').first().find('.mat-info').toArray()
-                .map(e => Object.assign({}, {
-                    name: $(e).find('a').text(),
-                    quantity: parseIntIfPossible($(e).find('.mat-qty').text().trim().substr(1))
-                }));
-
-            let tiers = $("h3:contains('Tier Process')")
-                .siblings('table').last().find('.mat-info').toArray()
                 .map(e => Object.assign({}, {
                     name: $(e).find('a').text(),
                     quantity: parseIntIfPossible($(e).find('.mat-qty').text().trim().substr(1))
@@ -119,13 +100,33 @@ module.exports = {
                     }))
                 );
 
-
             return Promise.all(promises)
                 .then(materials => Object.assign(item, {
                     craft_materials: materials
-                }))
+                }));
         })
     },
+
+    // getCraftDetail: (item) => {
+    //     return rp({uri: item.link, transform: transform}).then($ => {
+    //
+    //
+    //         let tiers = $("h3:contains('Tier Process')")
+    //             .siblings('table').last().find('.mat-info').toArray()
+    //             .map(e => Object.assign({}, {
+    //                 name: $(e).find('a').text(),
+    //                 quantity: parseIntIfPossible($(e).find('.mat-qty').text().trim().substr(1))
+    //             }));
+    //
+    //
+    //
+    //
+    //         return Promise.all(promises)
+    //             .then(materials => Object.assign(item, {
+    //                 craft_materials: materials
+    //             }))
+    //     })
+    // },
 
     searchMonsterDetail: (name) => {
         return rp({ uri: url + '/search?keyword=' + name, transform: transform })

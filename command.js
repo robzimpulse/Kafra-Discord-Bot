@@ -2,6 +2,13 @@ const PoporingAPI = require('./poporing.life');
 const RomwikiAPI = require('./romwiki.net');
 const builder = require('./discord_message_builder');
 
+let capitalized = (string) => string.charAt(0).toUpperCase() + string.slice(1);
+
+const handleEmptyData = (keyword, name, data) => {
+    if (data.length > 0) { return data }
+    throw new Error(`${capitalized(keyword)} data with keyword \`${name}\` not found`)
+};
+
 module.exports = {
 
     listen: (message, bot) => {
@@ -18,6 +25,7 @@ module.exports = {
         RomwikiAPI
             .searchMonsterDetail(name)
             .then(monsters => monsters.map(monster => builder.monsterDetailToMessageBuilder(monster)))
+            .then(results => handleEmptyData(keyword, name, results))
             .then(results => results.forEach(result => message.channel.send(result)))
             .catch(error => message.reply(error.message));
     },
@@ -28,6 +36,7 @@ module.exports = {
         RomwikiAPI
             .searchItemDetail(name)
             .then(items => items.map(item => builder.itemDetailToMessageBuilder(item)))
+            .then(results => handleEmptyData(keyword, name, results))
             .then(results => results.forEach(result => message.channel.send(result)))
             .catch(error => message.reply(error.message));
     },
@@ -48,6 +57,7 @@ module.exports = {
                 return Object.assign(data, { items: items });
             }))
             .then(data => builder.itemTrendingToMessageBuilder(data))
+            .then(results => handleEmptyData(keyword, name, results))
             .then(result => message.channel.send(result))
             .catch(error => message.reply(error.message));
     },
@@ -61,6 +71,7 @@ module.exports = {
                 .then(result => Object.assign(item, result.data))
             )
             .then(result => builder.exchangeDetailToMessageBuilder(result))
+            .then(results => handleEmptyData(keyword, name, results))
             .then(result => message.channel.send(result))
             .catch(error => message.reply(error.message));
     }
