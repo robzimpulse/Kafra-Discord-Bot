@@ -35,111 +35,113 @@ module.exports = {
     },
 
     getItemDetail: (link) => {
-        return rp({uri: link, transform: transform}).then($ => {
-            let item_info = $("h3:contains('Item Info')")
-                .siblings('table').first()
-                .find('td').toArray().map(e => $(e).text())
-                .filter((e, i) => oddIndex(e, i))
-                .map(e => parseIntIfPossible(e));
+        return cache.get(link.substr(url.length),() => {
+            return rp({uri: link, transform: transform}).then($ => {
+                let item_info = $("h3:contains('Item Info')")
+                    .siblings('table').first()
+                    .find('td').toArray().map(e => $(e).text())
+                    .filter((e, i) => oddIndex(e, i))
+                    .map(e => parseIntIfPossible(e));
 
-            let equipment_info = $("h3:contains('Equipment Info')")
-                .siblings('table').first()
-                .find('td').toArray()
-                .filter((e, i) => oddIndex(e, i));
+                let equipment_info = $("h3:contains('Equipment Info')")
+                    .siblings('table').first()
+                    .find('td').toArray()
+                    .filter((e, i) => oddIndex(e, i));
 
-            let jobs = $(equipment_info[1]).find('li').toArray()
-                .map(e => $(e).text());
+                let jobs = $(equipment_info[1]).find('li').toArray()
+                    .map(e => $(e).text());
 
-            let effects = $(equipment_info[2]).find('li').toArray()
-                .map(e => $(e).text());
+                let effects = $(equipment_info[2]).find('li').toArray()
+                    .map(e => $(e).text());
 
-            let item = {
-                name: $('.item-name').text(),
-                image: $('.item-image').find('img').attr('src'),
-                link: link,
-                description: $('.item-desc').text(),
-                type: $('.item-info').find('p').text(),
-                item_info: {
-                    level: item_info[0],
-                    max_stack: item_info[1],
-                    sellable: item_info[2],
-                    sell_price: item_info[3],
-                    tradeable: item_info[4],
-                    storageable: item_info[5]
-                },
-                equipment_info: {
-                    type: $(equipment_info[0]).text(),
-                    job: jobs.join(', '),
-                    effect: effects.join(', ')
-                }
-            };
+                let item = {
+                    name: $('.item-name').text(),
+                    image: $('.item-image').find('img').attr('src'),
+                    link: link,
+                    description: $('.item-desc').text(),
+                    type: $('.item-info').find('p').text(),
+                    item_info: {
+                        level: item_info[0],
+                        max_stack: item_info[1],
+                        sellable: item_info[2],
+                        sell_price: item_info[3],
+                        tradeable: item_info[4],
+                        storageable: item_info[5]
+                    },
+                    equipment_info: {
+                        type: $(equipment_info[0]).text(),
+                        job: jobs.join(', '),
+                        effect: effects.join(', ')
+                    }
+                };
 
-            // if (item.type.toLowerCase() === 'equipment') {
-            //     item.equipment_info = {
-            //         type: $(equipment_info[0]).text(),
-            //         job: $(equipment_info[1]).,
-            //         effect: effects.join(', ')
-            //     }
-            // }
+                // if (item.type.toLowerCase() === 'equipment') {
+                //     item.equipment_info = {
+                //         type: $(equipment_info[0]).text(),
+                //         job: $(equipment_info[1]).,
+                //         effect: effects.join(', ')
+                //     }
+                // }
 
-            let materials = $("h3:contains('Craft Info')")
-                .siblings('table').first().find('.mat-info').toArray()
-                .map(e => Object.assign({}, {
-                    name: $(e).find('a').text(),
-                    quantity: parseIntIfPossible($(e).find('.mat-qty').text().trim().substr(1))
-                }));
-
-            let data = $("h3:contains('Tier Process')")
-                .siblings('table').last().find('tr').toArray();
-            let temp = chunks(data, 2);
-            temp.pop();
-            let tiers = temp.map(array => {
-                let materials = $(array[1]).find('.mat-info').toArray()
+                let materials = $("h3:contains('Craft Info')")
+                    .siblings('table').first().find('.mat-info').toArray()
                     .map(e => Object.assign({}, {
                         name: $(e).find('a').text(),
                         quantity: parseIntIfPossible($(e).find('.mat-qty').text().trim().substr(1))
                     }));
-                return {
-                    name: $(array[0]).find('td').first().text().trim(),
-                    effect: $(array[0]).find('td').last().text().trim(),
-                    materials: materials
-                };
-            });
 
-            item.craft_tiers = tiers;
-            item.craft_materials = materials;
+                let data = $("h3:contains('Tier Process')")
+                    .siblings('table').last().find('tr').toArray();
+                let temp = chunks(data, 2);
+                temp.pop();
+                let tiers = temp.map(array => {
+                    let materials = $(array[1]).find('.mat-info').toArray()
+                        .map(e => Object.assign({}, {
+                            name: $(e).find('a').text(),
+                            quantity: parseIntIfPossible($(e).find('.mat-qty').text().trim().substr(1))
+                        }));
+                    return {
+                        name: $(array[0]).find('td').first().text().trim(),
+                        effect: $(array[0]).find('td').last().text().trim(),
+                        materials: materials
+                    };
+                });
 
-            return item;
+                item.craft_tiers = tiers;
+                item.craft_materials = materials;
 
-            // let promises = materials
-            //     .map(material => PoporingAPI.searchItem(material.name)
-            //         .then(item => PoporingAPI.getLatestPrice(item.name).then(result => {
-            //             if (material.name === item.display_name) {
-            //                 return Promise.resolve(Object.assign(material, {
-            //                     price: result.data.price,
-            //                     total_price: result.data.price * material.quantity
-            //                 }))
-            //             } else if (material.name.toLowerCase() === 'zeny') {
-            //                 return Promise.resolve(Object.assign(material, {
-            //                     price: 1,
-            //                     total_price: material.quantity
-            //                 }))
-            //             } else {
-            //                 return module.exports.searchItemDetail(material.name)
-            //                     .then(e => e[0])
-            //                     .then(item => Object.assign(material, {
-            //                         price: item.item_info.sell_price,
-            //                         total_price: item.item_info.sell_price * material.quantity
-            //                     }))
-            //             }
-            //         }))
-            //     );
-            //
-            // return Promise.all(promises)
-            //     .then(materials => Object.assign(item, {
-            //         craft_materials: materials
-            //     }));
-        })
+                return item;
+
+                // let promises = materials
+                //     .map(material => PoporingAPI.searchItem(material.name)
+                //         .then(item => PoporingAPI.getLatestPrice(item.name).then(result => {
+                //             if (material.name === item.display_name) {
+                //                 return Promise.resolve(Object.assign(material, {
+                //                     price: result.data.price,
+                //                     total_price: result.data.price * material.quantity
+                //                 }))
+                //             } else if (material.name.toLowerCase() === 'zeny') {
+                //                 return Promise.resolve(Object.assign(material, {
+                //                     price: 1,
+                //                     total_price: material.quantity
+                //                 }))
+                //             } else {
+                //                 return module.exports.searchItemDetail(material.name)
+                //                     .then(e => e[0])
+                //                     .then(item => Object.assign(material, {
+                //                         price: item.item_info.sell_price,
+                //                         total_price: item.item_info.sell_price * material.quantity
+                //                     }))
+                //             }
+                //         }))
+                //     );
+                //
+                // return Promise.all(promises)
+                //     .then(materials => Object.assign(item, {
+                //         craft_materials: materials
+                //     }));
+            })
+        });
     },
 
     searchMonsterDetail: (name) => {
