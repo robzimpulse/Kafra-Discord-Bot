@@ -2,7 +2,6 @@ const rp = require('request-promise');
 const cheerio = require('cheerio');
 const CacheFirebase = require('./firebase');
 const cache = new CacheFirebase(60 * 60 * 24);
-const PoporingAPI = require('./poporing.life');
 
 const transform = (body) => { return cheerio.load(body); };
 const url = 'https://www.romwiki.net';
@@ -90,8 +89,6 @@ module.exports = {
 
                 let temp = chunks(data, 2);
 
-                temp.pop();
-
                 item.craft_tiers = temp.map(array => {
                     let materials = $(array[1]).find('.mat-info').toArray()
                         .map(e => Object.assign({}, {
@@ -106,35 +103,6 @@ module.exports = {
                 });
 
                 return item;
-
-                // let promises = materials
-                //     .map(material => PoporingAPI.searchItem(material.name)
-                //         .then(item => PoporingAPI.getLatestPrice(item.name).then(result => {
-                //             if (material.name === item.display_name) {
-                //                 return Promise.resolve(Object.assign(material, {
-                //                     price: result.data.price,
-                //                     total_price: result.data.price * material.quantity
-                //                 }))
-                //             } else if (material.name.toLowerCase() === 'zeny') {
-                //                 return Promise.resolve(Object.assign(material, {
-                //                     price: 1,
-                //                     total_price: material.quantity
-                //                 }))
-                //             } else {
-                //                 return module.exports.searchItemDetail(material.name)
-                //                     .then(e => e[0])
-                //                     .then(item => Object.assign(material, {
-                //                         price: item.item_info.sell_price,
-                //                         total_price: item.item_info.sell_price * material.quantity
-                //                     }))
-                //             }
-                //         }))
-                //     );
-                //
-                // return Promise.all(promises)
-                //     .then(materials => Object.assign(item, {
-                //         craft_materials: materials
-                //     }));
             })
         });
     },
