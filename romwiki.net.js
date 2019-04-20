@@ -67,23 +67,18 @@ module.exports = {
                         sell_price: item_info[3],
                         tradeable: item_info[4],
                         storageable: item_info[5]
-                    },
-                    equipment_info: {
+                    }
+                };
+
+                if (item.type.toLowerCase() === 'equipment') {
+                    item.equipment_info = {
                         type: $(equipment_info[0]).text(),
                         job: jobs.join(', '),
                         effect: effects.join(', ')
                     }
-                };
+                }
 
-                // if (item.type.toLowerCase() === 'equipment') {
-                //     item.equipment_info = {
-                //         type: $(equipment_info[0]).text(),
-                //         job: $(equipment_info[1]).,
-                //         effect: effects.join(', ')
-                //     }
-                // }
-
-                let materials = $("h3:contains('Craft Info')")
+                item.craft_materials = $("h3:contains('Craft Info')")
                     .siblings('table').first().find('.mat-info').toArray()
                     .map(e => Object.assign({}, {
                         name: $(e).find('a').text(),
@@ -92,9 +87,12 @@ module.exports = {
 
                 let data = $("h3:contains('Tier Process')")
                     .siblings('table').last().find('tr').toArray();
+
                 let temp = chunks(data, 2);
+
                 temp.pop();
-                let tiers = temp.map(array => {
+
+                item.craft_tiers = temp.map(array => {
                     let materials = $(array[1]).find('.mat-info').toArray()
                         .map(e => Object.assign({}, {
                             name: $(e).find('a').text(),
@@ -106,9 +104,6 @@ module.exports = {
                         materials: materials
                     };
                 });
-
-                item.craft_tiers = tiers;
-                item.craft_materials = materials;
 
                 return item;
 
