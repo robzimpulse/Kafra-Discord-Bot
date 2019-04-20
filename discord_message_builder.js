@@ -111,6 +111,17 @@ module.exports = {
             embed.addField('Equipment Info', formatList(item.equipment_info), true);
         }
 
+        if (item.craft_materials && item.craft_materials.length > 0) {
+            let materials = item.craft_materials
+                .map((e) => `${e.name} : **${qty(e.quantity)}**`)
+                .filter(line => line.length > 0)
+                .join('\n');
+
+            let total_price = item.craft_materials.reduce((total, e) => total + e.total_price,0);
+
+            embed.addField(`Craft Materials (**Cost: ${currency(total_price)}** z)`, materials, true);
+        }
+
         return embed
     }
 

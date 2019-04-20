@@ -2,12 +2,15 @@ const rp = require('request-promise');
 const cheerio = require('cheerio');
 const CacheFirebase = require('./firebase');
 const cache = new CacheFirebase(60 * 60 * 24);
+const PoporingAPI = require('./poporing.life');
 
 const transform = (body) => { return cheerio.load(body); };
 const url = 'https://www.romwiki.net';
 const oddIndex = (e, i) => i % 2 > 0;
 const parseIntIfPossible = (e) => Number.isNaN(parseInt(e)) ? e : parseInt(e);
 const unique = (e) => e.filter((v,i) => e.indexOf(v) === i);
+
+const debug_promise = (e) => { console.log(e); return e };
 
 module.exports = {
 
@@ -23,6 +26,10 @@ module.exports = {
             .then(result => Promise.all(result))
             .then(result => result
                 .map(item => module.exports.getEquipmentDetail(item))
+            )
+            .then(result => Promise.all(result))
+            .then(result => result
+                .map(item => module.exports.getCraftDetail(item))
             )
             .then(result => Promise.all(result))
     },
@@ -68,6 +75,55 @@ module.exports = {
                     effect: effects.join(', ')
                 }
             })
+        })
+    },
+
+    getCraftDetail: (item) => {
+        return rp({uri: item.link, transform: transform}).then($ => {
+
+            let materials = $("h3:contains('Craft Info')")
+                .siblings('table').first().find('.mat-info').toArray()
+                .map(e => Object.assign({}, {
+                    name: $(e).find('a').text(),
+                    quantity: parseIntIfPossible($(e).find('.mat-qty').text().trim().substr(1))
+                }));
+
+            let tiers = $("h3:contains('Tier Process')")
+                .siblings('table').last().find('.mat-info').toArray()
+                .map(e => Object.assign({}, {
+                    name: $(e).find('a').text(),
+                    quantity: parseIntIfPossible($(e).find('.mat-qty').text().trim().substr(1))
+                }));
+
+            let promises = materials
+                .map(material => PoporingAPI.searchItem(material.name)
+                    .then(item => PoporingAPI.getLatestPrice(item.name).then(result => {
+                        if (material.name === item.display_name) {
+                            return Promise.resolve(Object.assign(material, {
+                                price: result.data.price,
+                                total_price: result.data.price * material.quantity
+                            }))
+                        } else if (material.name.toLowerCase() === 'zeny') {
+                            return Promise.resolve(Object.assign(material, {
+                                price: 1,
+                                total_price: material.quantity
+                            }))
+                        } else {
+                            return module.exports.searchItemDetail(material.name)
+                                .then(e => e[0])
+                                .then(item => Object.assign(material, {
+                                    price: item.item_info.sell_price,
+                                    total_price: item.item_info.sell_price * material.quantity
+                                }))
+                        }
+                    }))
+                );
+
+
+            return Promise.all(promises)
+                .then(materials => Object.assign(item, {
+                    craft_materials: materials
+                }))
         })
     },
 

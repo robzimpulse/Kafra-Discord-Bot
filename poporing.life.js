@@ -35,7 +35,7 @@ module.exports = {
             json: true,
             headers: headers
         };
-        return cache.get('price_'+name,() => {
+        return cache.get('price/'+name,() => {
             return rp(options).then(response => response.data)
         })
     },
