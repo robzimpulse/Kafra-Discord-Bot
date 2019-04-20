@@ -122,6 +122,23 @@ module.exports = {
             embed.addField(`Craft Materials (**Cost: ${currency(total_price)}** z)`, materials, true);
         }
 
+        if (item.craft_tiers && item.craft_tiers.length > 0) {
+
+            let tiers = item.craft_tiers
+                .map(tier => {
+                    let materials = tier.materials
+                        .map((e) => `${e.name} : **${qty(e.quantity)}**`)
+                        .filter(line => line.length > 0)
+                        .join('\n');
+
+                    return `**${tier.name} (Cost: ${0} z)**\n${tier.effect}\n${materials}\n`
+                })
+                .filter(line => line.length > 0)
+                .join('\n');
+
+            embed.addField(`Craft Tiers (**Cost: ${currency(0)}** z)`, tiers, true);
+        }
+
         return embed
     }
 

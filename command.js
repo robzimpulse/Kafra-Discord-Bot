@@ -2,8 +2,8 @@ const PoporingAPI = require('./poporing.life');
 const RomwikiAPI = require('./romwiki.net');
 const builder = require('./discord_message_builder');
 
-let capitalized = (string) => string.charAt(0).toUpperCase() + string.slice(1);
-
+const capitalized = (string) => string.charAt(0).toUpperCase() + string.slice(1);
+const debug_promise = (e) => { console.log(e); return e };
 const handleEmptyData = (keyword, name, data) => {
     if (data.length > 0) { return data }
     throw new Error(`${capitalized(keyword)} data with keyword \`${name}\` not found`)
@@ -35,6 +35,7 @@ module.exports = {
         let name = command.substr(keyword.length).trim();
         RomwikiAPI
             .searchItemDetail(name)
+            .then(e => debug_promise(e))
             .then(items => items.map(item => builder.itemDetailToMessageBuilder(item)))
             .then(results => handleEmptyData(keyword, name, results))
             .then(results => results.forEach(result => message.channel.send(result)))
