@@ -7,6 +7,8 @@ const headers = {
     'User-Agent': 'PoporingBot-01282019'
 };
 
+const request = (options) => rp(options).then(response => response.data);
+
 module.exports = {
 
     searchItem: (name) => {
@@ -15,18 +17,32 @@ module.exports = {
             location: 0, distance: 100, maxPatternLength: 32, minMatchCharLength: 1,
             keys: [ "name", "display_name", "alt_display_name_list" ]
         };
-        return module.exports.getItemList()
-            .then(data => {
-                let items = data.item_list.sort((a,b) => {
-                    return a.display_name.length - b.display_name.length
-                });
-                let fuse = new Fuse(items, options);
-                let item = fuse.search(name)[0];
-                if (item === undefined) {
-                    throw new Error(`Item with name: **${name}** not found.`);
-                }
-                return item;
+        return module.exports.getItemList().then(data => {
+            let items = data.item_list.sort((a,b) => {
+                return a.display_name.length - b.display_name.length
             });
+            let fuse = new Fuse(items, options);
+            let item = fuse.search(name)[0];
+            if (item === undefined) {
+                throw new Error(`Item with name: **${name}** not found.`);
+            }
+            return item;
+        });
+    },
+
+    searchItems: (names) => {
+        let options = {
+            shouldSort: true, tokenize: true, matchAllTokens: true, threshold: 0.6,
+            location: 0, distance: 100, maxPatternLength: 32, minMatchCharLength: 1,
+            keys: [ "name", "display_name", "alt_display_name_list" ]
+        };
+        return module.exports.getItemList().then(data => {
+            let items = data.item_list.sort((a,b) => {
+                return a.display_name.length - b.display_name.length
+            });
+            let fuse = new Fuse(items, options);
+            return names.map(e => fuse.search(e)[0])
+        })
     },
 
     getLatestPrice: (name) => {
@@ -35,9 +51,17 @@ module.exports = {
             json: true,
             headers: headers
         };
-        return cache.get('price/'+name,() => {
-            return rp(options).then(response => response.data)
-        })
+        return request(options)
+    },
+
+    getLatestPrices: (names) => {
+        let array_names = '['+names.map(e => '\"'+e+'\"').join(',')+']';
+        const options = {
+            uri: 'https://api.poporing.life/get_latest_prices?body=' + encodeURI(array_names),
+            json: true,
+            headers: headers
+        };
+        return request(options)
     },
 
     getTrendingList: () => {
@@ -46,9 +70,7 @@ module.exports = {
             json: true,
             headers: headers
         };
-        return cache.get('trending',() => {
-            return rp(options).then(response => response.data)
-        })
+        return cache.get('trending',() => request(options))
     },
 
     getItemList: () => {
@@ -57,9 +79,7 @@ module.exports = {
             json: true,
             headers: headers
         };
-        return cache.get('item',() => {
-            return rp(options).then(response => response.data)
-        })
+        return cache.get('item',() => request(options))
     }
 
 };

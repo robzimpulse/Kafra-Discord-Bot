@@ -1,7 +1,9 @@
 const PoporingAPI = require('./poporing.life');
 const RomwikiAPI = require('./romwiki.net');
+const ROExplorerAPI = require('./roexplorer');
 const builder = require('./discord_message_builder');
 
+const flatten = (arr) => arr.reduce((flat, next) => flat.concat(Array.isArray(next) ? flatten(next) : next), []);
 const capitalized = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 const debug_promise = (e) => { console.log(e); return e };
 const handleEmptyData = (keyword, name, data) => {
@@ -22,55 +24,22 @@ module.exports = {
     getMonsterDetail: (keyword, command, message, bot) => {
         if(!command.toLowerCase().startsWith(keyword)) { return }
         let name = command.substr(keyword.length).trim();
-        RomwikiAPI
-            .searchMonsterDetail(name)
-            .then(monsters => monsters.map(monster => builder.monsterDetailToMessageBuilder(monster)))
-            .then(results => handleEmptyData(keyword, name, results))
-            .then(results => results.forEach(result => message.channel.send(result)))
-            .catch(error => { console.log(error); return message.reply(error.message) });
+        console.log("monster detail for :" + name);
     },
 
     getItemDetail: (keyword, command, message, bot) => {
         if(!command.toLowerCase().startsWith(keyword)) { return }
         let name = command.substr(keyword.length).trim();
-        RomwikiAPI
-            .searchItemDetail(name)
-            .then(items => {
-                console.log(items);
-                let item_promises = items.map(item => {
-                    let craft_materials_promises = item.craft_materials
-                        .map(material => module.exports.populateMaterialPrice(material));
-                    return Promise.all(craft_materials_promises)
-                        .then(materials => Object.assign(item, {
-                            craft_materials: materials
-                        }))
-                });
-                return Promise.all(item_promises)
-            })
-            .then(items => {
-                let item_promises = items.map(item => {
-                    let promises = item.craft_tiers.map(tier => {
-                        let promises = tier.materials.map(material => {
-                            return module.exports.populateMaterialPrice(material)
-                        });
-                        return Promise.all(promises).then(materials => {
-                            return Object.assign(tier, { materials: materials })
-                        });
-                    });
-                    return Promise.all(promises).then(tiers => {
-                        return Object.assign(item, { craft_tiers: tiers })
-                    })
-                });
-                return Promise.all(item_promises)
-            })
-            .then(items => items.map(item => builder.itemDetailToMessageBuilder(item)))
-            // .then(results => handleEmptyData(keyword, name, results))
-            .then(results => results.forEach(result => message.channel.send(result)))
-            .catch(error => { console.log(error); return message.reply(error.message) });
+        console.log("item detail for :" + name);
+        ROExplorerAPI
+            .searchItem(name)
+            .then(link => ROExplorerAPI.getItemDetails(link))
+            .then(item => console.log(item));
     },
 
     getTrendingList: (keyword, command, message, bot) => {
         if(!command.toLowerCase().startsWith(keyword)) { return }
+        let name = command.substr(keyword.length).trim();
         PoporingAPI
             .getTrendingList()
             .then(data => Object.assign({}, {

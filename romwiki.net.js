@@ -100,7 +100,7 @@ module.exports = {
                         effect: $(array[0]).find('td').last().text().trim(),
                         materials: materials
                     };
-                });
+                }).filter(e => e.materials.length > 0);
 
                 return item;
             })

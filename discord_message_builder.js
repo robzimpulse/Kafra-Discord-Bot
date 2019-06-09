@@ -111,38 +111,39 @@ module.exports = {
             embed.addField('Equipment Info', formatList(item.equipment_info), true);
         }
 
-        if (item.craft_materials && item.craft_materials.length > 0) {
-            let materials = item.craft_materials
-                .map((e) => `${e.name} : **${qty(e.quantity)}**`)
-                .filter(line => line.length > 0)
-                .join('\n');
+        // if (item.craft_materials && item.craft_materials.length > 0) {
+        //     let materials = item.craft_materials
+        //         .map((e) => `${e.name} : **${qty(e.quantity)}**`)
+        //         .filter(line => line.length > 0)
+        //         .join('\n');
+        //
+        //     let total_price = item.craft_materials.reduce((total, e) => total + e.total_price,0);
+        //
+        //     embed.addField(`Craft Materials (**Cost: ${currency(total_price)}** z)`, materials, true);
+        // }
 
-            let total_price = item.craft_materials.reduce((total, e) => total + e.total_price,0);
-
-            embed.addField(`Craft Materials (**Cost: ${currency(total_price)}** z)`, materials, true);
-        }
-
-        if (item.craft_tiers && item.craft_tiers.length > 0) {
-            let tiers = item.craft_tiers
-                .map(tier => {
-                    let materials = tier.materials
-                        .map((e) => `${e.name} : **${qty(e.quantity)}**`)
-                        .filter(line => line.length > 0)
-                        .join('\n');
-                    let total_price = tier.materials.reduce((total, e) => total + e.total_price,0);
-                    return `__**${tier.name} (Cost: ${currency(total_price)} z)**__\n${tier.effect}\n${materials}\n`
-                })
-                .filter(line => line.length > 0)
-                .join('\n');
-
-            let total_price = item.craft_tiers.reduce((total, e) => {
-                return total + e.materials.reduce((total, e) => {
-                    return total + e.total_price
-                }, 0)
-            },0);
-
-            embed.addField(`Craft Tiers (**Cost: ${currency(total_price)}** z)`, tiers, true);
-        }
+        // if (item.craft_tiers && item.craft_tiers.length > 0) {
+        //     let tiers = item.craft_tiers
+        //         .map(tier => {
+        //             console.log(tier.materials);
+        //             let materials = tier.materials
+        //                 .map((e) => `${e.name} : **${qty(e.quantity)}**`)
+        //                 .filter(line => line.length > 0)
+        //                 .join('\n');
+        //             let total_price = tier.materials.reduce((total, e) => total + e.total_price,0);
+        //             return `__**${tier.name} (Cost: ${currency(total_price)} z)**__\n${tier.effect}\n${materials}\n`
+        //         })
+        //         .filter(line => line.length > 0)
+        //         .join('\n');
+        //
+        //     let total_price = item.craft_tiers.reduce((total, e) => {
+        //         return total + e.materials.reduce((total, e) => {
+        //             return total + e.total_price
+        //         }, 0)
+        //     },0);
+        //
+        //     embed.addField(`Craft Tiers (**Cost: ${currency(total_price)}** z)`, tiers, true);
+        // }
 
         return embed
     }
