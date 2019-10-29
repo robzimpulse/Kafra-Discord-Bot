@@ -24,13 +24,18 @@ module.exports = {
     getMonsterDetail: (keyword, command, message, bot) => {
         if(!command.toLowerCase().startsWith(keyword)) { return }
         let name = command.substr(keyword.length).trim();
-        console.log("monster detail for :" + name);
+        console.log("monster detail for : " + name);
+        RomwikiAPI
+            .searchMonsterDetail(name)
+            .then(monster => builder.monsterDetailToMessageBuilder(monster[0]))
+            .then(result => message.channel.send(result))
+            .catch(error => builder.errorToMessageBuilder(error))
     },
 
     getItemDetail: (keyword, command, message, bot) => {
         if(!command.toLowerCase().startsWith(keyword)) { return }
         let name = command.substr(keyword.length).trim();
-        console.log("item detail for :" + name);
+        console.log("item detail for : " + name);
         ROExplorerAPI
             .searchItem(name)
             .then(link => ROExplorerAPI.getItemDetails(link))
@@ -56,7 +61,7 @@ module.exports = {
             .then(data => builder.itemTrendingToMessageBuilder(data))
             .then(results => handleEmptyData(keyword, name, results))
             .then(result => message.channel.send(result))
-            .catch(error => { console.log(error); return message.reply(error.message) });
+            .catch(error => builder.errorToMessageBuilder(error));
     },
 
     getExchangeDetail: (keyword, command, message, bot) => {
@@ -70,7 +75,7 @@ module.exports = {
             .then(result => builder.exchangeDetailToMessageBuilder(result))
             .then(results => handleEmptyData(keyword, name, results))
             .then(result => message.channel.send(result))
-            .catch(error => { console.log(error); return message.reply(error.message) });
+            .catch(error => builder.errorToMessageBuilder(error));
     },
 
     populateMaterialPrice: (material) => {

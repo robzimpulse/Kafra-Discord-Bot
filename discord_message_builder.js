@@ -17,6 +17,12 @@ let capitalized = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 
 module.exports = {
 
+    errorToMessageBuilder: (error) => {
+        return new RichEmbed()
+            .setAuthor(`Error Occured`, undefined, undefined)
+            .setDescription(error.message)
+    },
+
     monsterDetailToMessageBuilder: (monster) => {
         let embed = new RichEmbed()
             .setAuthor(`${monster.name}`, undefined, monster.link)
