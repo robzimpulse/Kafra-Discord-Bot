@@ -27,8 +27,8 @@ module.exports = {
         console.log("monster detail for : " + name);
         RomwikiAPI
             .searchMonsterDetail(name)
-            .then(monster => builder.monsterDetailToMessageBuilder(monster[0]))
-            .then(result => message.channel.send(result))
+            .then(monsters => monsters.map(monster => builder.monsterDetailToMessageBuilder(monster)))
+            .then(results => results.forEach(result => message.channel.send(result)))
             .catch(error => builder.errorToMessageBuilder(error))
     },
 
