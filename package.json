@@ -15,7 +15,7 @@
     "express": "^4.16.4",
     "firebase-admin": "^7.3.0",
     "fuse.js": "^3.4.4",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "node-cache": "^4.2.0",
     "numeral": "^2.0.6",
     "request": "^2.88.0",
